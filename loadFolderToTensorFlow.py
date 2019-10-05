@@ -6,7 +6,7 @@ from cv2 import cv2 # Need to install an older version on windows : 'pip install
 
 # Expected output (self.img_rows, self.img_cols, self.channels)
 # channels = 3 colors : R, G, B.
-def loadFolderToTensorFlow(folder, image_width, image_height, ratio, resizedFolder, outputFolder, channels = 3, percentageOfImagesToKeep = 100, minFiles = 3):
+def loadFolderToTensorFlow(folder, image_width, image_height, ratio, resizedFolder, outputFolder, channels = 3, percentageOfImagesToKeep = 100, minFiles = 5):
 
     # Load all files
     onlyfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]

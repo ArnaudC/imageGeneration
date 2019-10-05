@@ -15,17 +15,18 @@ import sys
 import numpy as np
 
 class GAN():
-    def __init__(self, imagesInNumpyArray, img_rows, img_cols, outputFolder, redimRatio = 1, percentageOfImagesToKeep  = 100, imagesPerIteration = 5, channels = 3):
+    def __init__(self, imagesInNumpyArray, img_rows, img_cols, outputFolder, redimRatio = 1, percentageOfImagesToKeep  = 100, imagesPerIteration = 5, channels = 3, latent_dim = 100, dpi = 100):
         self.outputFolder = outputFolder
         self.img_rows = 28 if (imagesInNumpyArray is None) else img_rows
         self.img_cols = 28 if (imagesInNumpyArray is None) else img_cols
         self.channels = 1 if (imagesInNumpyArray is None) else channels
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
-        self.latent_dim = 100
+        self.latent_dim = latent_dim
         self.imagesInNumpyArray = imagesInNumpyArray
         self.imagesPerIteration = imagesPerIteration
         self.redimRatio = redimRatio
         self.percentageOfImagesToKeep = percentageOfImagesToKeep
+        self.dpi = dpi
 
         optimizer = Adam(0.0002, 0.5)
 
@@ -162,11 +163,30 @@ class GAN():
                 axs[i,j].imshow(gen_imgs[cnt, :, :, :]) # imshow(gen_imgs[cnt, :, :,0], cmap='gray')
                 axs[i,j].axis('off')
                 cnt += 1
-        fig.savefig("{outputFolder}{pToKeep}_pKeep{redimRatio}_redimRatio_{epoch}epoch.png".format(
+        # fig.set_size_inches(18.5, 10.5)
+        fig.savefig("{outputFolder}{dpi}_dpi{pToKeep}_pKeep{redimRatio}_redimRatio_{epoch}epoch.png".format(
             outputFolder=self.outputFolder,
+            dpi=self.dpi,
             pToKeep=self.percentageOfImagesToKeep,
             redimRatio=self.redimRatio,
             epoch=epoch
-        ))
+        ), dpi=self.dpi)
+
+
+
+        # self.plot_generated_images(e, generator)
 
         plt.close()
+
+
+# def plot_generated_images(epoch, generator, examples=100, dim=(10,10), figsize=(10,10)):
+#     noise= np.random.normal(loc=0, scale=1, size=[examples, 100])
+#     generated_images = generator.predict(noise)
+#     generated_images = generated_images.reshape(100,28,28)
+#     plt.figure(figsize=figsize)
+#     for i in range(generated_images.shape[0]):
+#         plt.subplot(dim[0], dim[1], i+1)
+#         plt.imshow(generated_images[i], interpolation='nearest')
+#         plt.axis('off')
+#     plt.tight_layout()
+#     plt.savefig('gan_generated_image %d.png' %epoch)

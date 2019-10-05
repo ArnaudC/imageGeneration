@@ -31,7 +31,7 @@ class GAN():
         optimizer = Adam(0.0002, 0.5)
 
         # Build and compile the discriminator
-        self.discriminator = self.build_discriminator()
+        self.discriminator = self.build_discriminatorDropout()
         self.discriminator.compile(loss='binary_crossentropy',
             optimizer=optimizer,
             metrics=['accuracy'])
@@ -81,13 +81,32 @@ class GAN():
     def build_discriminator(self):
 
         model = Sequential()
-
         model.add(Flatten(input_shape=self.img_shape))
         model.add(Dense(512))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dense(256))
         model.add(LeakyReLU(alpha=0.2))
         model.add(Dense(1, activation='sigmoid'))
+        model.summary()
+
+        img = Input(shape=self.img_shape)
+        validity = model(img)
+
+        return Model(img, validity)
+
+    def build_discriminatorDropout(self):
+        model=Sequential()
+        model.add(Flatten(input_shape=self.img_shape))
+        # model.add(Dense(units=1024,input_dim=784))
+        # model.add(Dense(units=1024))
+        # model.add(LeakyReLU(0.2))
+        # model.add(Dropout(0.3))
+        model.add(Dense(units=512))
+        model.add(LeakyReLU(0.2))
+        model.add(Dropout(0.3))
+        model.add(Dense(units=256))
+        model.add(LeakyReLU(0.2))
+        model.add(Dense(units=1, activation='sigmoid'))
         model.summary()
 
         img = Input(shape=self.img_shape)

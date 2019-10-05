@@ -15,7 +15,7 @@ import sys
 import numpy as np
 
 class GAN():
-    def __init__(self, imagesInNumpyArray, img_rows, img_cols, outputFolder,channels = 3):
+    def __init__(self, imagesInNumpyArray, img_rows, img_cols, outputFolder, redimRatio = 1, percentageOfImagesToKeep  = 100, imagesPerIteration = 5, channels = 3):
         self.outputFolder = outputFolder
         self.img_rows = 28 if (imagesInNumpyArray is None) else img_rows
         self.img_cols = 28 if (imagesInNumpyArray is None) else img_cols
@@ -23,6 +23,9 @@ class GAN():
         self.img_shape = (self.img_rows, self.img_cols, self.channels)
         self.latent_dim = 100
         self.imagesInNumpyArray = imagesInNumpyArray
+        self.imagesPerIteration = imagesPerIteration
+        self.redimRatio = redimRatio
+        self.percentageOfImagesToKeep = percentageOfImagesToKeep
 
         optimizer = Adam(0.0002, 0.5)
 
@@ -145,8 +148,7 @@ class GAN():
                 self.sample_images(epoch)
 
     def sample_images(self, epoch):
-        # r, c = 5, 5
-        r, c = 3, 3
+        r, c = self.imagesPerIteration, self.imagesPerIteration
         noise = np.random.normal(0, 1, (r * c, self.latent_dim))
         gen_imgs = self.generator.predict(noise)
 
@@ -160,5 +162,11 @@ class GAN():
                 axs[i,j].imshow(gen_imgs[cnt, :, :, :]) # imshow(gen_imgs[cnt, :, :,0], cmap='gray')
                 axs[i,j].axis('off')
                 cnt += 1
-        fig.savefig(self.outputFolder + "%d.png" % epoch)
+        fig.savefig("{outputFolder}{pToKeep}_pKeep{redimRatio}_redimRatio_{epoch}epoch.png".format(
+            outputFolder=self.outputFolder,
+            pToKeep=self.percentageOfImagesToKeep,
+            redimRatio=self.redimRatio,
+            epoch=epoch
+        ))
+
         plt.close()

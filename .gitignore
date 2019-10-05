@@ -2,4 +2,5 @@ input/*
 output/*
 resized/*
 inputOthers/*
+screen/*
 __pycache__/*

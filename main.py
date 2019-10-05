@@ -12,6 +12,7 @@ imageHeight = 1080
 imageWidth = 773
 redimRatio = 5 # Reduce image size : height / ratio
 percentageOfImagesToKeep = 1
+imagesPerIteration = 3
 
 (x, new_image_height, new_image_width) = loadFolderToTensorFlow(
         folder = inputPath,
@@ -31,6 +32,9 @@ gan = GAN(
         img_rows = new_image_height,
         img_cols = new_image_width,
         outputFolder = outputFolder,
+        imagesPerIteration = imagesPerIteration,
+        redimRatio = redimRatio,
+        percentageOfImagesToKeep = percentageOfImagesToKeep
 )
 
 gan.train(

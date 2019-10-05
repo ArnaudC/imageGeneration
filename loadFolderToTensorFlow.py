@@ -5,6 +5,8 @@ from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_a
 
 import numpy as np
 
+# Expect (self.img_rows, self.img_cols, self.channels)
+# (self.img_rows, self.img_cols, self.channels) if (imagesInNumpyArray is None) else (self.channels, self.img_rows, self.img_cols)
 def loadFolderToTensorFlow(folder, image_width, image_height, ratio, channels):
 
     onlyfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
@@ -15,7 +17,7 @@ def loadFolderToTensorFlow(folder, image_width, image_height, ratio, channels):
 
     train_files = []
     y_train = []
-    i=0
+    # i=0
     for _file in onlyfiles:
         train_files.append(_file)
         # bw2_fr_21.jpg
@@ -37,8 +39,8 @@ def loadFolderToTensorFlow(folder, image_width, image_height, ratio, channels):
     # channels = 3
     # nb_classes = 1
 
-    dataset = np.ndarray(shape=(len(train_files), channels, image_height, image_width), dtype=np.float32)
-
+    # dataset = np.ndarray(shape=(len(train_files), channels, image_height, image_width), dtype=np.float32)
+    dataset = np.ndarray(shape=(len(train_files), image_height, image_width, channels), dtype=np.float32)
     # i = 0
     # for _file in train_files:
     #     img = load_img(folder + "/" + _file)  # this is a PIL image

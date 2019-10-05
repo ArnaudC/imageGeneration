@@ -19,7 +19,7 @@ class GAN():
         self.img_rows = 28 if (imagesInNumpyArray is None) else img_rows
         self.img_cols = 28 if (imagesInNumpyArray is None) else img_cols
         self.channels = 1 if (imagesInNumpyArray is None) else channels
-        self.img_shape = (self.img_rows, self.img_cols, self.channels) if (imagesInNumpyArray is None) else (self.channels, self.img_rows, self.img_cols)
+        self.img_shape = (self.img_rows, self.img_cols, self.channels)
         self.latent_dim = 100
         self.imagesInNumpyArray = imagesInNumpyArray
 
@@ -155,8 +155,8 @@ class GAN():
         cnt = 0
         for i in range(r):
             for j in range(c):
-                axs[i,j].imshow(gen_imgs[cnt, :, :,0], cmap='gray')
-                # axs[i,j].imshow(gen_imgs[cnt, :, :, :])
+                # axs[i,j].imshow(gen_imgs[cnt, :, :,0], cmap='gray')
+                axs[i,j].imshow(gen_imgs[cnt, :, :, :])
                 axs[i,j].axis('off')
                 cnt += 1
         fig.savefig("output/%d.png" % epoch)

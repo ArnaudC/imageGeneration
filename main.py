@@ -9,14 +9,19 @@ from loadFolderToTensorFlow import loadFolderToTensorFlow
 
 inputPath = r"C:\Users\aorus\Dropbox\Dev\DataMining\ImageGeneration\input"
 
-x = loadFolderToTensorFlow(inputPath, image_width = 773, image_height = 1080, ratio = 4, channels = 3)
+image_width = 773
+image_height = 1080
+channels = 3 # 3 colors : R, G, B
+ratio = 4 # Reduce image size : height / ratio
+
+x = loadFolderToTensorFlow(inputPath, image_width, image_height, channels, ratio)
 # x = None # Switch mode : digit / tcg
 
 gan = GAN(
         x,
-        channels = 3,
-        img_rows = 270,
-        img_cols = 193,
+        img_rows = image_width,
+        img_cols = image_height,
+        channels = channels,
 )
 
 gan.train(

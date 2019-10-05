@@ -15,7 +15,7 @@ import sys
 import numpy as np
 
 class GAN():
-    def __init__(self, imagesInNumpyArray, img_rows, img_cols, channels):
+    def __init__(self, imagesInNumpyArray, img_rows, img_cols, channels = 3):
         self.img_rows = 28 if (imagesInNumpyArray is None) else img_rows
         self.img_cols = 28 if (imagesInNumpyArray is None) else img_cols
         self.channels = 1 if (imagesInNumpyArray is None) else channels
@@ -145,6 +145,7 @@ class GAN():
 
     def sample_images(self, epoch):
         r, c = 5, 5
+        # r, c = 3, 3
         noise = np.random.normal(0, 1, (r * c, self.latent_dim))
         gen_imgs = self.generator.predict(noise)
 
@@ -155,8 +156,7 @@ class GAN():
         cnt = 0
         for i in range(r):
             for j in range(c):
-                # axs[i,j].imshow(gen_imgs[cnt, :, :,0], cmap='gray')
-                axs[i,j].imshow(gen_imgs[cnt, :, :, :])
+                axs[i,j].imshow(gen_imgs[cnt, :, :, :]) # imshow(gen_imgs[cnt, :, :,0], cmap='gray')
                 axs[i,j].axis('off')
                 cnt += 1
         fig.savefig("output/%d.png" % epoch)

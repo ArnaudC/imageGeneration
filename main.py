@@ -1,35 +1,34 @@
-# Image generation
-# OCR
-# Classification
-
 import os, sys
-
-from GAN import GAN
 from loadFolderToTensorFlow import loadFolderToTensorFlow
 
-inputPath = r"C:\Users\aorus\Dropbox\Dev\DataMining\ImageGeneration\input"
+mainDir = os.path.dirname(os.path.realpath(__file__))
+inputPath = mainDir + '\\input\\'
+resizedFolder = mainDir + '\\resized\\'
+imageHeight = 1080
+imageWidth = 773
+redimRatio = 8 # Reduce image size : height / ratio
+percentageOfImagesToKeep = 10
 
-image_width = 773
-image_height = 1080
-channels = 3 # 3 colors : R, G, B
-ratio = 16 # Reduce image size : height / ratio
-
-(x, new_image_height, new_image_width) = loadFolderToTensorFlow(inputPath, image_width, image_height, channels, ratio)
+(x, new_image_height, new_image_width) = loadFolderToTensorFlow(
+        folder = inputPath,
+        image_width = imageWidth,
+        image_height = imageHeight,
+        ratio = redimRatio,
+        percentageOfImagesToKeep = percentageOfImagesToKeep,
+        resizedFolder = resizedFolder
+)
 # x = None # Switch mode : digit / tcg
+
+from GAN import GAN
 
 gan = GAN(
         x,
         img_rows = new_image_height,
         img_cols = new_image_width,
-        channels = channels,
 )
 
 gan.train(
-        epochs=3000, # 30000, 3000
-        batch_size=2, # 32, 2
-        sample_interval=200
+        epochs=3001, # 30000
+        batch_size=4, # 2, 32
+        sample_interval=100 # 200
 )
-
-# d_loss_real = self.discriminator.train_on_batch(imgs, valid)
-# ValueError: Error when checking input: expected input_1 to have 4 dimensions, but got array with shape (2, 3, 270, 1, 193)   
-# ValueError: Error when checking input: expected input_1 to have shape (270, 193, 3) but got array with shape (3, 270, 193)

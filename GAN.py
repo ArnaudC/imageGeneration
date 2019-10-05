@@ -159,5 +159,5 @@ class GAN():
                 # axs[i,j].imshow(gen_imgs[cnt, :, :, :])
                 axs[i,j].axis('off')
                 cnt += 1
-        fig.savefig("images/%d.png" % epoch)
+        fig.savefig("output/%d.png" % epoch)
         plt.close()

@@ -7,7 +7,7 @@ from time import time
 from time import sleep
 from subprocess import check_output
 
-folder = r"C:\Users\aorus\Dropbox\Dev\DataMining\ImageGeneration\ctg"
+folder = r"C:\Users\aorus\Dropbox\Dev\DataMining\ImageGeneration\input"
 
 onlyfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
 

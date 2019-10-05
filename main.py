@@ -7,7 +7,7 @@ import os, sys
 from GAN import GAN
 from loadFolderToTensorFlow import loadFolderToTensorFlow
 
-inputPath = r"C:\Users\aorus\Dropbox\Dev\DataMining\ImageGeneration\ctg"
+inputPath = r"C:\Users\aorus\Dropbox\Dev\DataMining\ImageGeneration\input"
 
 x = loadFolderToTensorFlow(inputPath, image_width = 773, image_height = 1080, ratio = 4, channels = 3)
 # x = None # Switch mode : digit / tcg

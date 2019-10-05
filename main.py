@@ -12,15 +12,15 @@ inputPath = r"C:\Users\aorus\Dropbox\Dev\DataMining\ImageGeneration\input"
 image_width = 773
 image_height = 1080
 channels = 3 # 3 colors : R, G, B
-ratio = 4 # Reduce image size : height / ratio
+ratio = 16 # Reduce image size : height / ratio
 
-x = loadFolderToTensorFlow(inputPath, image_width, image_height, channels, ratio)
+(x, new_image_height, new_image_width) = loadFolderToTensorFlow(inputPath, image_width, image_height, channels, ratio)
 # x = None # Switch mode : digit / tcg
 
 gan = GAN(
         x,
-        img_rows = image_width,
-        img_cols = image_height,
+        img_rows = new_image_height,
+        img_cols = new_image_width,
         channels = channels,
 )
 

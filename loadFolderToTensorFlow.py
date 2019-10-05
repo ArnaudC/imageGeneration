@@ -67,5 +67,5 @@ def loadFolderToTensorFlow(folder, image_width, image_height, channels, ratio):
             print("%d images to array" % i)
     print("All images to array!")
 
-    return dataset
+    return (dataset, new_image_height, new_image_width)
 

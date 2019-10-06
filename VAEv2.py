@@ -8,7 +8,9 @@ import tempfile
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Requires tensorflow v2 : pip install --upgrade tensorflow-gpu. Then use commands at https://github.com/deepmind/sonnet
+# Requires tensorflow v2 :
+# pip3 install --upgrade tensorflow-gpu.
+#  Then use commands at https://github.com/deepmind/sonnet
 import sonnet as snt
 import tensorflow as tf
 import tarfile
@@ -21,11 +23,9 @@ from six.moves import xrange
 # import sonnet as snt
 # tf.enable_v2_behavior()
 
-print(snt.__version__)
-print(dir(snt))
-
 print("TensorFlow version {}".format(tf.__version__))
 print("Sonnet version {}".format(snt.__version__))
+# print(dir(snt))
 
 # Download Cifar10 data
 data_path = "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz"

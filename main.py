@@ -14,7 +14,7 @@ imageWidth = 773
 
 # Parameters that can be optimized
 redimRatio = 4 # 4 min. Reduce image size : height / ratio. Dont get too low since it 'll take a huge amount of memory
-percentageOfImagesToKeep = 100 # 100
+percentageOfImagesToKeep = 1 # 100
 imagesPerIteration = 2 # Ex: 3 will generate 3x3 pictures per iteration
 latent_dim = 110 # 110. High value means less random pictures
 dpi = 400 # 400

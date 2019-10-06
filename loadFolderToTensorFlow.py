@@ -58,7 +58,6 @@ def loadFolderToTensorFlow(folder, image_width, image_height, ratio, resizedFold
         # cv2.waitKey(0)
         # cv2.destroyAllWindows()
 
-        # img_new = cv2.resize(img, (new_width, new_height), interpolation=cv2.INTER_LINEAR)
         x = cv2.resize(img, dsize=(new_image_width, new_image_height), interpolation=cv2.INTER_CUBIC)
         if (i <= (minFiles - 1)):
             cv2.imwrite(resizedFolder + _file, x) # See resized images

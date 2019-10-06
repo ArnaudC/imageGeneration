@@ -87,8 +87,10 @@ class GAN():
         model.add(Flatten(input_shape=self.img_shape))
         model.add(Dense(512))
         model.add(LeakyReLU(alpha=0.2))
+        # model.add(Dropout(0.1))
         model.add(Dense(256))
         model.add(LeakyReLU(alpha=0.2))
+        # model.add(Dropout(0.1))
         model.add(Dense(1, activation='sigmoid'))
         model.summary()
 
@@ -100,7 +102,6 @@ class GAN():
     def build_discriminatorDropout(self):
         model=Sequential()
         model.add(Flatten(input_shape=self.img_shape))
-        # model.add(Dense(units=1024,input_dim=784))
         # model.add(Dense(units=1024))
         # model.add(LeakyReLU(0.2))
         # model.add(Dropout(0.3))
@@ -168,9 +169,15 @@ class GAN():
 
             # If at save interval => save generated image samples
             if epoch % sample_interval == 0:
-                self.sample_images(epoch)
+                self.saveOutput(epoch)
 
-    def sample_images(self, epoch):
+    def saveOutput(self, epoch):
+        if (self.imagesPerIteration == 1):
+            self.saveSingleOutput(epoch)
+        else:
+            self.saveMultipleOutput(epoch)
+
+    def saveMultipleOutput(self, epoch):
         r, c = self.imagesPerIteration, self.imagesPerIteration
         noise = np.random.normal(0, 1, (r * c, self.latent_dim))
         gen_imgs = self.generator.predict(noise)
@@ -194,22 +201,23 @@ class GAN():
             redimRatio=self.redimRatio,
             epoch=epoch
         ), dpi=self.dpi)
-
-
-
-        # self.plot_generated_images(e, generator)
-
         plt.close()
 
+    def saveSingleOutput(self, epoch, examples=100):
+        noise = np.random.normal(loc=0, scale=1, size=[1, self.latent_dim])
+        gen_imgs = self.generator.predict(noise)
 
-# def plot_generated_images(epoch, generator, examples=100, dim=(10,10), figsize=(10,10)):
-#     noise= np.random.normal(loc=0, scale=1, size=[examples, 100])
-#     generated_images = generator.predict(noise)
-#     generated_images = generated_images.reshape(100,28,28)
-#     plt.figure(figsize=figsize)
-#     for i in range(generated_images.shape[0]):
-#         plt.subplot(dim[0], dim[1], i+1)
-#         plt.imshow(generated_images[i], interpolation='nearest')
-#         plt.axis('off')
-#     plt.tight_layout()
-#     plt.savefig('gan_generated_image %d.png' %epoch)
+        # Rescale images 0 - 1
+        gen_imgs = 0.5 * gen_imgs + 0.5
+
+        plt.imshow(gen_imgs[0], interpolation='nearest')
+        plt.axis('off')
+        plt.tight_layout()
+        plt.savefig("{outputFolder}{dpi}_dpi{pToKeep}_pKeep{redimRatio}_redimRatio_{epoch}epoch.png".format(
+            outputFolder=self.outputFolder,
+            dpi=self.dpi,
+            pToKeep=self.percentageOfImagesToKeep,
+            redimRatio=self.redimRatio,
+            epoch=epoch
+        ), dpi=self.dpi)
+        plt.close()

@@ -14,8 +14,8 @@ def loadFolderToTensorFlow(folder, image_width, image_height, ratio, resizedFold
     if (filesNb == 0):
         print ("No file found in {folder}".format(folder=folder))
         exit()
+    random.shuffle(onlyfiles)
     if (percentageOfImagesToKeep < 100):
-        random.shuffle(onlyfiles)
         lastIndex = int((filesNb - 1) * (percentageOfImagesToKeep / 100))
         lastIndex = minFiles if (lastIndex == 0) else lastIndex
         onlyfiles = onlyfiles[0:lastIndex]

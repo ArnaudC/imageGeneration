@@ -175,6 +175,7 @@ class GAN():
         # Rescale images 0 - 1
         gen_imgs = 0.5 * gen_imgs + 0.5
 
+        # fig, axs = plt.subplots(r, c, figsize=(self.img_rows / self.imagesPerIteration, self.img_cols / self.imagesPerIteration))
         fig, axs = plt.subplots(r, c)
         cnt = 0
         for i in range(r):

@@ -1,0 +1,33 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 1 files
+Detected 2 issues that require attention
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+File: VAE.py
+--------------------------------------------------------------------------------
+VAE.py:237:4: WARNING: Changing dataset.make_one_shot_iterator() to tf.compat.v1.data.make_one_shot_iterator(dataset). Please check this transformation.
+
+VAE.py:243:4: WARNING: Changing dataset.make_initializable_iterator() to tf.compat.v1.data.make_initializable_iterator(dataset). Please check this transformation.
+
+================================================================================
+Detailed log follows:
+
+================================================================================
+--------------------------------------------------------------------------------
+Processing file 'VAE.py'
+ outputting to 'VAEv2.py'
+--------------------------------------------------------------------------------
+
+36:0: INFO: Renamed 'tf.gfile.MakeDirs' to 'tf.io.gfile.makedirs'
+190:0: INFO: Renamed 'tf.reset_default_graph' to 'tf.compat.v1.reset_default_graph'
+237:4: WARNING: Changing dataset.make_one_shot_iterator() to tf.compat.v1.data.make_one_shot_iterator(dataset). Please check this transformation.
+
+243:4: WARNING: Changing dataset.make_initializable_iterator() to tf.compat.v1.data.make_initializable_iterator(dataset). Please check this transformation.
+
+278:4: INFO: Renamed 'tf.placeholder' to 'tf.compat.v1.placeholder'
+290:14: INFO: Added keywords to args of function 'tf.reduce_mean'
+302:12: INFO: Renamed 'tf.train.AdamOptimizer' to 'tf.compat.v1.train.AdamOptimizer'
+304:7: INFO: Renamed 'tf.train.SingularMonitoredSession' to 'tf.compat.v1.train.SingularMonitoredSession'
+--------------------------------------------------------------------------------
+

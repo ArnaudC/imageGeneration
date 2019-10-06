@@ -17,9 +17,13 @@ import os, sys
 import matplotlib.pyplot as plt
 import sys
 import numpy as np
+import imageio # !pip install -q imageio
+import glob
+import time
+import imageio
 
 class GAN():
-    def __init__(self, imagesInNumpyArray, img_rows, img_cols, outputFolder, redimRatio = 1, percentageOfImagesToKeep  = 100, imagesPerIteration = 5, channels = 3, latent_dim = 100, dpi = 100):
+    def __init__(self, imagesInNumpyArray, img_rows, img_cols, outputFolder, redimRatio = 1, percentageOfImagesToKeep  = 100, imagesPerIteration = 5, channels = 3, latent_dim = 100, dpi = 100, GIFframeDuration=1):
         self.outputFolder = outputFolder
         self.img_rows = 28 if (imagesInNumpyArray is None) else img_rows
         self.img_cols = 28 if (imagesInNumpyArray is None) else img_cols
@@ -31,6 +35,7 @@ class GAN():
         self.redimRatio = redimRatio
         self.percentageOfImagesToKeep = percentageOfImagesToKeep
         self.dpi = dpi
+        self.GIFframeDuration = GIFframeDuration
 
         optimizer = Adam(0.0002, 0.5)
 
@@ -83,7 +88,7 @@ class GAN():
         return Model(noise, img)
 
     def build_discriminator(self):
-        model=Sequential()
+        model = Sequential()
         model.add(Flatten(input_shape=self.img_shape))
         model.add(Dense(units=1024))
         model.add(LeakyReLU(0.1))
@@ -102,6 +107,7 @@ class GAN():
         return Model(img, validity)
 
     def train(self, epochs, batch_size=128, sample_interval=50):
+        start = time.time()
 
         # Load the dataset
         if (self.imagesInNumpyArray is None):
@@ -153,6 +159,9 @@ class GAN():
             # If at save interval => save generated image samples
             if epoch % sample_interval == 0:
                 self.saveOutput(epoch)
+        
+        self.saveGif()
+        print ('{} epochs in {} sec.'.format(epoch, time.time()-start))
 
     def saveOutput(self, epoch):
         fileName = "{outputFolder}{dpi}_dpi{pToKeep}_pKeep{redimRatio}_redimRatio_{epoch}epoch.png".format(
@@ -200,3 +209,16 @@ class GAN():
         plt.tight_layout()
         plt.savefig(fileName, dpi=self.dpi)
         plt.close()
+
+    def saveGif(self):
+        fileName = "{outputFolder}{dpi}_dpi{pToKeep}_pKeep{redimRatio}_redimRatio.gif".format(
+            outputFolder=self.outputFolder,
+            dpi=self.dpi,
+            pToKeep=self.percentageOfImagesToKeep,
+            redimRatio=self.redimRatio,
+        )
+        images = []
+        filenames = glob.glob("{outputFolder}*epoch.png".format(outputFolder=self.outputFolder,))
+        for filename in filenames:
+            images.append(imageio.imread(filename))
+        imageio.mimsave(fileName, images, duration=self.GIFframeDuration)

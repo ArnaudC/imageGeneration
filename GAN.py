@@ -189,6 +189,7 @@ class GAN():
         )
         images = []
         filenames = glob.glob("{outputFolder}*epoch.png".format(outputFolder=self.outputFolder,))
-        for filename in filenames:
+        filenames.sort(key=os.path.getmtime)
+        for filename in filenames[1:]: # Skip first : only noise
             images.append(imageio.imread(filename))
         imageio.mimsave(fileName, images, duration=self.GIFframeDuration)

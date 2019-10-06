@@ -16,9 +16,12 @@ redimRatio = 5 # 4 min. Reduce image size : height / ratio. Dont get too low sin
 GIFframeDuration = 0.5
 
 # Parameters that can be optimized
-percentageOfImagesToKeep = 10 # 10
-imagesPerIteration = 2 # Ex: 3 will generate 3x3 pictures per iteration
-dpi = 500 # 400
+percentageOfImagesToKeep = 4 # 10
+imagesPerIteration = 1 # Ex: 3 will generate 3x3 pictures per iteration
+dpi = 400 # 400
+epochs = 401 # 30000
+batch_size = 1 # 4, 32
+sample_interval = 20 # 200
 
 (x, new_image_height, new_image_width) = loadFolderToTensorFlow(
         folder = inputPath,
@@ -47,7 +50,7 @@ gan = GAN(
 )
 
 gan.train(
-        epochs=301, # 30000
-        batch_size=4, # 4, 32
-        sample_interval=10 # 200
+        epochs=epochs,
+        batch_size=batch_size,
+        sample_interval=sample_interval
 )

@@ -2,6 +2,7 @@
 from __future__ import print_function, division
 
 import tensorflow as tf
+from shutil import copyfile
 from tensorflow import keras
 
 from tensorflow.keras.datasets import mnist
@@ -34,7 +35,7 @@ class GAN():
         optimizer = Adam(0.0002, 0.5)
 
         # Build and compile the discriminator
-        self.discriminator = self.build_discriminatorDropout()
+        self.discriminator = self.build_discriminator()
         self.discriminator.compile(loss='binary_crossentropy',
             optimizer=optimizer,
             metrics=['accuracy'])
@@ -65,10 +66,10 @@ class GAN():
         model.add(Dense(256, input_dim=self.latent_dim))
         model.add(LeakyReLU(alpha=0.2))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(Dense(512))
+        model.add(Dense(1024))
         model.add(LeakyReLU(alpha=0.2))
         model.add(BatchNormalization(momentum=0.8))
-        model.add(Dense(1024))
+        model.add(Dense(2048))
         model.add(LeakyReLU(alpha=0.2))
         model.add(BatchNormalization(momentum=0.8))
         model.add(Dense(np.prod(self.img_shape), activation='tanh'))
@@ -82,34 +83,16 @@ class GAN():
         return Model(noise, img)
 
     def build_discriminator(self):
-
-        model = Sequential()
-        model.add(Flatten(input_shape=self.img_shape))
-        model.add(Dense(512))
-        model.add(LeakyReLU(alpha=0.2))
-        # model.add(Dropout(0.1))
-        model.add(Dense(256))
-        model.add(LeakyReLU(alpha=0.2))
-        # model.add(Dropout(0.1))
-        model.add(Dense(1, activation='sigmoid'))
-        model.summary()
-
-        img = Input(shape=self.img_shape)
-        validity = model(img)
-
-        return Model(img, validity)
-
-    def build_discriminatorDropout(self):
         model=Sequential()
         model.add(Flatten(input_shape=self.img_shape))
-        # model.add(Dense(units=1024))
-        # model.add(LeakyReLU(0.2))
-        # model.add(Dropout(0.3))
-        model.add(Dense(units=512))
+        model.add(Dense(units=1024))
+        model.add(LeakyReLU(0.1))
+        model.add(Dropout(0.2))
+        model.add(Dense(units=2048)) # 512
         model.add(LeakyReLU(0.2))
-        model.add(Dropout(0.3))
-        model.add(Dense(units=256))
-        model.add(LeakyReLU(0.2))
+        model.add(Dropout(0.2)) # 0.3
+        model.add(Dense(units=1024)) # 256
+        model.add(LeakyReLU(0.1)) # 0.2
         model.add(Dense(units=1, activation='sigmoid'))
         model.summary()
 
@@ -172,12 +155,20 @@ class GAN():
                 self.saveOutput(epoch)
 
     def saveOutput(self, epoch):
+        fileName = "{outputFolder}{dpi}_dpi{pToKeep}_pKeep{redimRatio}_redimRatio_{epoch}epoch.png".format(
+            outputFolder=self.outputFolder,
+            dpi=self.dpi,
+            pToKeep=self.percentageOfImagesToKeep,
+            redimRatio=self.redimRatio,
+            epoch=epoch
+        )
         if (self.imagesPerIteration == 1):
-            self.saveSingleOutput(epoch)
+            self.saveSingleOutput(fileName)
         else:
-            self.saveMultipleOutput(epoch)
+            self.saveMultipleOutput(fileName)
+        copyfile(fileName, "{outputFolder}{outputFile}".format(outputFolder=self.outputFolder, outputFile="output.png"))
 
-    def saveMultipleOutput(self, epoch):
+    def saveMultipleOutput(self, fileName):
         r, c = self.imagesPerIteration, self.imagesPerIteration
         noise = np.random.normal(0, 1, (r * c, self.latent_dim))
         gen_imgs = self.generator.predict(noise)
@@ -194,16 +185,10 @@ class GAN():
                 axs[i,j].axis('off')
                 cnt += 1
         # fig.set_size_inches(18.5, 10.5)
-        fig.savefig("{outputFolder}{dpi}_dpi{pToKeep}_pKeep{redimRatio}_redimRatio_{epoch}epoch.png".format(
-            outputFolder=self.outputFolder,
-            dpi=self.dpi,
-            pToKeep=self.percentageOfImagesToKeep,
-            redimRatio=self.redimRatio,
-            epoch=epoch
-        ), dpi=self.dpi)
+        fig.savefig(fileName, dpi=self.dpi)
         plt.close()
 
-    def saveSingleOutput(self, epoch, examples=100):
+    def saveSingleOutput(self, fileName):
         noise = np.random.normal(loc=0, scale=1, size=[1, self.latent_dim])
         gen_imgs = self.generator.predict(noise)
 
@@ -213,11 +198,5 @@ class GAN():
         plt.imshow(gen_imgs[0], interpolation='nearest')
         plt.axis('off')
         plt.tight_layout()
-        plt.savefig("{outputFolder}{dpi}_dpi{pToKeep}_pKeep{redimRatio}_redimRatio_{epoch}epoch.png".format(
-            outputFolder=self.outputFolder,
-            dpi=self.dpi,
-            pToKeep=self.percentageOfImagesToKeep,
-            redimRatio=self.redimRatio,
-            epoch=epoch
-        ), dpi=self.dpi)
+        plt.savefig(fileName, dpi=self.dpi)
         plt.close()

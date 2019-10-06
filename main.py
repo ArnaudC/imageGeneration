@@ -11,12 +11,12 @@ outputFolder = mainDir + '\\output\\'
 imageHeight = 1080
 imageWidth = 773
 latent_dim = 100 # 100. High value means less random pictures
-redimRatio = 4 # 4 min. Reduce image size : height / ratio. Dont get too low since it 'll take a huge amount of memory
+redimRatio = 5 # 4 min. Reduce image size : height / ratio. Dont get too low since it 'll take a huge amount of memory
 
 # Parameters that can be optimized
-percentageOfImagesToKeep = 100 # 100
+percentageOfImagesToKeep = 10 # 10
 imagesPerIteration = 2 # Ex: 3 will generate 3x3 pictures per iteration
-dpi = 400 # 400
+dpi = 500 # 400
 
 (x, new_image_height, new_image_width) = loadFolderToTensorFlow(
         folder = inputPath,
@@ -46,5 +46,5 @@ gan = GAN(
 gan.train(
         epochs=1001, # 30000
         batch_size=4, # 4, 32
-        sample_interval=30 # 200
+        sample_interval=10 # 200
 )

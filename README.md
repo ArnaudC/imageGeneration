@@ -32,7 +32,7 @@ In the **output** directory :
 # Using pokemon cards
 ![Alt text](screen/readme/GANpk.png?raw=true "GAN network")  
 ![Alt text](screen/readme/pkCard.png?raw=true "A Pokemon card")  
-![Alt text](screen/readme/400_dpi10_pKeep4_redimRatio.gif?raw=true "The generated GIF")  
+![Alt text](screen/readme/350_dpi10_pKeep4_redimRatio.gif?raw=true "The generated GIF")  
 
 # Links to go further
 Inspired by : https://skymind.ai/wiki/generative-adversarial-network-gan  

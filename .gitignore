@@ -3,4 +3,5 @@ output/*
 resized/*
 inputOthers/*
 screen/*
+!screen/readme/
 __pycache__/*

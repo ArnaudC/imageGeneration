@@ -5,7 +5,9 @@ Tested with **Tensorflow 2** and **GANs (Generative Adversarial Networks)**, (10
 # How to use it
 Copy all pictures you want to use in the **input** directory of this project (tested with pictures of the same size : 1080x773px, 3 colors).  
 Change parameters in main.py and GAN.py if needed (imageHeight, imageWidth, redimRatio, dpi, percentageOfImagesToKeep, imagesPerIteration, batch_size, sample_interval, epochs).  
-Run main.py.  
+```bash
+python main.py
+```
 
 # The result
 In the **resized** directory : generate 4 resized images.  

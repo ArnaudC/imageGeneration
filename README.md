@@ -26,3 +26,11 @@ In the **output** directory :
 **imageWidth** : Change it one time, the pixel width.  
 **redimRatio** : 4 means the resized image will be (imageHeight / 4, imageWidth / 4). Used to reduce memory and go faster.  
 **dpi** : the size of the final picture. Higher means better image quality but it takes longer to create the files.  
+
+# Using pokemon cards
+![Alt text](screen/readme/GANpk.png?raw=true "GAN network")  
+![Alt text](screen/readme/pkCard.png?raw=true "A Pokemon card")  
+![Alt text](screen/readme/400_dpi10_pKeep4_redimRatio.gif?raw=true "The generated GIF")  
+
+# Links to go further
+Inspired by : https://skymind.ai/wiki/generative-adversarial-network-gan  

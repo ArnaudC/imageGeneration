@@ -198,7 +198,7 @@ checkpoint = tf.train.Checkpoint(
 discriminator=discriminator)
 
 # Define the training loop
-EPOCHS = 2 # 500
+EPOCHS = 500
 noise_dim = 100
 num_examples_to_generate = 16
 seed = tf.random.normal([num_examples_to_generate, noise_dim]) # We will reuse this seed overtime (so it's easier) to visualize progress in the animated GIF)

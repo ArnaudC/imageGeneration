@@ -12,6 +12,13 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "mainGanTf2Color.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/mainGanTf2Color.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python : Fichier actuel",
             "type": "python",
             "request": "launch",

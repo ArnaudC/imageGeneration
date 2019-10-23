@@ -1,22 +1,20 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
+
 import tensorflow as tf
-print(tf.__version__)
-
-
 import glob
-import imageio # !pip install -q imageio
+import imageio# !pip install imageio
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 import PIL
 from tensorflow.keras import layers
 import time
-
+import IPython
 
 from IPython import display
 
+print(tf.__version__)
 (train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
-
 
 train_images = train_images.reshape(train_images.shape[0], 28, 28, 1).astype('float32')
 train_images = (train_images - 127.5) / 127.5 # Normalize the images to [-1, 1]
@@ -24,9 +22,12 @@ train_images = (train_images - 127.5) / 127.5 # Normalize the images to [-1, 1]
 BUFFER_SIZE = 60000
 BATCH_SIZE = 256
 
-
 # Batch and shuffle the data
 train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+
+
+
+
 
 # The Generator
 def make_generator_model():
@@ -81,76 +82,23 @@ def generator_loss(fake_output):
     return cross_entropy(tf.ones_like(fake_output), fake_output)
 
 def generate_and_save_images(model, epoch, test_input):
-    # Notice `training` is set to False.
-    # This is so all layers run in inference mode (batchnorm).
-    predictions = model(test_input, training=False)
+  # Notice `training` is set to False.
+  # This is so all layers run in inference mode (batchnorm).
+  predictions = model(test_input, training=False)
 
-    fig = plt.figure(figsize=(4,4))
+  fig = plt.figure(figsize=(4,4))
 
-    for i in range(predictions.shape[0]):
-        plt.subplot(4, 4, i+1)
-        plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
-        plt.axis('off')
+  for i in range(predictions.shape[0]):
+      plt.subplot(4, 4, i+1)
+      plt.imshow(predictions[i, :, :, 0] * 127.5 + 127.5, cmap='gray')
+      plt.axis('off')
 
-    plt.savefig('output/image_at_epoch_{:04d}.png'.format(epoch))
-    # plt.show()
-
-
-# The Generator
-generator = make_generator_model()
-noise = tf.random.normal([1, 100])
-generated_image = generator(noise, training=False)
-plt.imshow(generated_image[0, :, :, 0], cmap='gray')
-mainDir = os.path.dirname(os.path.realpath(__file__))
-outputFolder = mainDir + '\\output\\'
-fileName = "{outputFolder}gantf2.png".format(
-    outputFolder=outputFolder,
-)
-dpi=100
-plt.savefig(fileName, dpi=dpi)
-plt.close()
-
-
-# The Discriminator
-discriminator = make_discriminator_model()
-decision = discriminator(generated_image)
-print (decision)
-
-
-# Define the loss and optimizers
-# This method returns a helper function to compute cross entropy loss
-cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+  plt.savefig('output/image_at_epoch_{:04d}.png'.format(epoch))
+#   plt.show()
 
 
 
-generator_optimizer = tf.keras.optimizers.Adam(1e-4)
-discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
-
-
-# Save checkpoints
-checkpoint_dir = './training_checkpoints'
-checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
-checkpoint = tf.train.Checkpoint(
-    generator_optimizer=generator_optimizer,
-    discriminator_optimizer=discriminator_optimizer,
-    generator=generator,
-discriminator=discriminator)
-
-
-
-# Define the training loop
-EPOCHS = 500
-noise_dim = 100
-num_examples_to_generate = 16
-
-# We will reuse this seed overtime (so it's easier)
-# to visualize progress in the animated GIF)
-seed = tf.random.normal([num_examples_to_generate, noise_dim])
-
-
-
-
-@tf.function # Notice the use of `tf.function` which causes the function to be "compiled".
+@tf.function
 def train_step(images):
     noise = tf.random.normal([BATCH_SIZE, noise_dim])
 
@@ -169,69 +117,101 @@ def train_step(images):
     generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
     discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
 
-
 def train(dataset, epochs):
-    for epoch in range(epochs):
-        start = time.time()
+  for epoch in range(epochs):
+    start = time.time()
 
     for image_batch in dataset:
-        train_step(image_batch)
+      train_step(image_batch)
 
     # Produce images for the GIF as we go
     display.clear_output(wait=True)
-    generate_and_save_images(
-        generator,
-        epoch + 1,
-        seed
-    )
+    generate_and_save_images(generator, epoch + 1, seed)
 
     # Save the model every 15 epochs
     if (epoch + 1) % 15 == 0:
-        checkpoint.save(file_prefix = checkpoint_prefix)
+      checkpoint.save(file_prefix = checkpoint_prefix)
 
     print ('Time for epoch {} is {} sec'.format(epoch + 1, time.time()-start))
 
-    # Generate after the final epoch
-    display.clear_output(wait=True)
-    generate_and_save_images(
-        generator,
-        epochs,
-        seed
-    )
+  # Generate after the final epoch
+  display.clear_output(wait=True)
+  generate_and_save_images(generator, epochs, seed)
 
-# dz
-train(train_dataset, EPOCHS)
-
-# Restore the latest checkpoint.
-# checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
-
-# Create a GIF
 # Display a single image using the epoch number
 def display_image(epoch_no):
     return PIL.Image.open('output/image_at_epoch_{:04d}.png'.format(epoch_no))
 
+# Create the gif
+def create_gif():
+    anim_file = 'output/dcgan.gif' # Use imageio to create an animated gif using the images saved during training.
+    with imageio.get_writer(anim_file, mode='I') as writer:
+        filenames = glob.glob('image*.png')
+        filenames = sorted(filenames)
+        last = -1
+        for i,filename in enumerate(filenames):
+            frame = 2*(i**0.5)
+            if round(frame) > round(last):
+                last = frame
+            else:
+                continue
+            image = imageio.imread(filename)
+            writer.append_data(image)
+    if IPython.version_info > (6,2,0,''):
+        display.Image(filename=anim_file)
+
+
+
+
+
+# The Generator
+generator = make_generator_model()
+noise = tf.random.normal([1, 100])
+generated_image = generator(noise, training=False)
+plt.imshow(generated_image[0, :, :, 0], cmap='gray')
+mainDir = os.path.dirname(os.path.realpath(__file__))
+outputFolder = mainDir + '\\output\\'
+fileName = "{outputFolder}gantf2.png".format(outputFolder=outputFolder,)
+dpi=100
+plt.savefig(fileName, dpi=dpi)
+plt.close()
+
+# The Discriminator
+discriminator = make_discriminator_model()
+decision = discriminator(generated_image)
+print (decision)
+
+# Define the loss and optimizers
+cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True) # This method returns a helper function to compute cross entropy loss
+
+# Optimizer
+generator_optimizer = tf.keras.optimizers.Adam(1e-4)
+discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
+
+# Save checkpoints
+checkpoint_dir = './training_checkpoints'
+checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
+checkpoint = tf.train.Checkpoint(
+    generator_optimizer=generator_optimizer,
+    discriminator_optimizer=discriminator_optimizer,
+    generator=generator,
+discriminator=discriminator)
+
+# Define the training loop
+EPOCHS = 2 # 500
+noise_dim = 100
+num_examples_to_generate = 16
+seed = tf.random.normal([num_examples_to_generate, noise_dim]) # We will reuse this seed overtime (so it's easier) to visualize progress in the animated GIF)
+
+# Main call
+train(train_dataset, EPOCHS)
+
+# Restore the latest checkpoint.
+checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
+
+# Display image
 display_image(EPOCHS)
 
-
-
-# Use imageio to create an animated gif using the images saved during training.
-anim_file = 'output/dcgan.gif'
-
-with imageio.get_writer(anim_file, mode='I') as writer:
-    filenames = glob.glob('image*.png')
-    filenames = sorted(filenames)
-    last = -1
-    for i,filename in enumerate(filenames):
-        frame = 2*(i**0.5)
-        if round(frame) > round(last):
-            last = frame
-        else:
-            continue
-        image = imageio.imread(filename)
-        writer.append_data(image)
-
-import IPython
-if IPython.version_info > (6,2,0,''):
-    display.Image(filename=anim_file)
-
+# Create a GIF
+create_gif()
 

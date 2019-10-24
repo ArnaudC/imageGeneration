@@ -13,41 +13,44 @@ import IPython
 
 from IPython import display
 
-
 class GANtf2Color():
-  def __init__(self, imagesInNumpyArray, imgRows, imgCols, outputFolder, channels = 1, redimRatio = 1, percentageOfImagesToKeep = 100):
+  def __init__(self, imagesInNumpyArray, imgRows, imgCols, outputFolder, batchSize, epochs, channels = 3, redimRatio = 1, percentageOfImagesToKeep = 100, dpi = 100):
     self.outputFolder = outputFolder
-    self.imgRows = 28 if (imagesInNumpyArray is None) else imgRows
-    self.imgCols = 28 if (imagesInNumpyArray is None) else imgCols
-    self.channels = 1 if (imagesInNumpyArray is None) else channels
-    self.img_shape = (self.imgRows, self.imgCols, self.channels)
+    self.imgRows = imgRows
+    self.imgCols = imgCols
+    self.channels = channels
+    self.imgShape = (self.imgRows, self.imgCols, self.channels)
     self.imagesInNumpyArray = imagesInNumpyArray
+    self.imgNb = imagesInNumpyArray.shape[0]
     self.redimRatio = redimRatio
     self.percentageOfImagesToKeep = percentageOfImagesToKeep
+    self.batchSize = batchSize
+    self.epochs = epochs
+    self.dpi = dpi
 
   def run(self):
-    # todo : clean up this mess
     print("Tensorflow version " + tf.__version__)
-    (train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
-    train_images = train_images.reshape(train_images.shape[0], self.imgRows, self.imgCols, self.channels).astype('float32')
-    train_images = (train_images - 127.5) / 127.5 # Normalize the images to [-1, 1]
+    train_images = self.imagesInNumpyArray.reshape(self.imgNb, self.imgRows, self.imgCols, self.channels).astype('float32')
 
-    self.BUFFER_SIZE = 60000
-    self.BATCH_SIZE = 256
+    # (old_train_images, train_labels), (_, _) = tf.keras.datasets.mnist.load_data()
+    # old_train_images = old_train_images.reshape(old_train_images.shape[0], 28, 28, 1).astype('float32')
+
+    train_images = (train_images - 127.5) / 127.5 # Normalize the images to [-1, 1]
+    # self.BUFFER_SIZE = self.imgNb # 60000
+    # self.BATCH_SIZE = self.batchSize # 256
 
     # Batch and shuffle the data
-    train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(self.BUFFER_SIZE).batch(self.BATCH_SIZE)
+    train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(self.imgNb).batch(self.batchSize)
 
     # The Generator
     self.generator = self.make_generator_model()
     noise = tf.random.normal([1, 100])
     generated_image = self.generator(noise, training=False)
-    plt.imshow(generated_image[0, :, :, 0], cmap='gray')
+    plt.imshow(generated_image[0, :, :, :])
     mainDir = os.path.dirname(os.path.realpath(__file__))
     outputFolder = mainDir + '\\output\\'
     fileName = "{outputFolder}gantf2.png".format(outputFolder=outputFolder,)
-    dpi=100
-    plt.savefig(fileName, dpi=dpi)
+    plt.savefig(fileName, dpi=self.dpi)
     plt.close()
 
     # The Discriminator
@@ -91,32 +94,38 @@ class GANtf2Color():
 
   # The Generator
   def make_generator_model(self):
+    imgRows4 = int(self.imgRows / 4)
+    imgCols4 = int(self.imgCols / 4)
+    imgRows2 = int(self.imgRows / 2)
+    imgCols2 = int(self.imgCols / 2)
+
     model = tf.keras.Sequential()
-    model.add(layers.Dense(7*7*256, use_bias=False, input_shape=(100,)))
+    model.add(layers.Dense(imgRows4 * imgCols4 * (256 * self.channels), use_bias=False, input_shape=(100,)))
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
 
-    model.add(layers.Reshape((7, 7, 256)))
-    assert model.output_shape == (None, 7, 7, 256) # Note: None is the batch size
+    model.add(layers.Reshape((imgRows4, imgCols4, 256 * self.channels)))
+    assert model.output_shape == (None, imgRows4, imgCols4, 256 * self.channels) # Note: None is the batch size
 
-    model.add(layers.Conv2DTranspose(128, (5, 5), strides=(1, 1), padding='same', use_bias=False))
-    assert model.output_shape == (None, 7, 7, 128)
+    model.add(layers.Conv2DTranspose(128 * self.channels, (5, 5), strides=(1, 1), padding='same', use_bias=False))
+    assert model.output_shape == (None, imgRows4, imgCols4, 128 * self.channels)
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
 
-    model.add(layers.Conv2DTranspose(64, (5, 5), strides=(2, 2), padding='same', use_bias=False))
-    assert model.output_shape == (None, 14, 14, 64)
+    model.add(layers.Conv2DTranspose(64 * self.channels, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+    # assert model.output_shape == (None, imgRows2, imgCols2, 64 * self.channels)
     model.add(layers.BatchNormalization())
     model.add(layers.LeakyReLU())
 
-    model.add(layers.Conv2DTranspose(1, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
-    assert model.output_shape == (None, 28, 28, 1)
+    model.add(layers.Conv2DTranspose(1 * self.channels, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
+
+    # assert model.output_shape == (None, self.imgRows, self.imgCols, 1*3)
 
     return model
 
   def make_discriminator_model(self):
       model = tf.keras.Sequential()
-      model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=self.img_shape)) # test self.img_shape
+      model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=self.imgShape)) # test self.imgShape
       model.add(layers.LeakyReLU())
       model.add(layers.Dropout(0.3))
 
@@ -155,7 +164,7 @@ class GANtf2Color():
 
   @tf.function
   def train_step(self, images):
-    noise = tf.random.normal([self.BATCH_SIZE, self.noise_dim])
+    noise = tf.random.normal([self.batchSize, self.noise_dim])
 
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
       generated_images = self.generator(noise, training=True)

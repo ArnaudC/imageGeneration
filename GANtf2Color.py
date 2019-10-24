@@ -15,7 +15,7 @@ from IPython import display
 
 
 class GANtf2Color():
-  def __init__(self, imagesInNumpyArray, imgRows, imgCols, outputFolder, redimRatio = 1, percentageOfImagesToKeep = 100):
+  def __init__(self, imagesInNumpyArray, imgRows, imgCols, outputFolder, channels = 1, redimRatio = 1, percentageOfImagesToKeep = 100):
     self.outputFolder = outputFolder
     self.imgRows = 28 if (imagesInNumpyArray is None) else imgRows
     self.imgCols = 28 if (imagesInNumpyArray is None) else imgCols
@@ -32,16 +32,16 @@ class GANtf2Color():
     train_images = train_images.reshape(train_images.shape[0], self.imgRows, self.imgCols, self.channels).astype('float32')
     train_images = (train_images - 127.5) / 127.5 # Normalize the images to [-1, 1]
 
-    BUFFER_SIZE = 60000
-    BATCH_SIZE = 256
+    self.BUFFER_SIZE = 60000
+    self.BATCH_SIZE = 256
 
     # Batch and shuffle the data
-    train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(BUFFER_SIZE).batch(BATCH_SIZE)
+    train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(self.BUFFER_SIZE).batch(self.BATCH_SIZE)
 
     # The Generator
-    generator = make_generator_model()
+    self.generator = self.make_generator_model()
     noise = tf.random.normal([1, 100])
-    generated_image = generator(noise, training=False)
+    generated_image = self.generator(noise, training=False)
     plt.imshow(generated_image[0, :, :, 0], cmap='gray')
     mainDir = os.path.dirname(os.path.realpath(__file__))
     outputFolder = mainDir + '\\output\\'
@@ -51,46 +51,46 @@ class GANtf2Color():
     plt.close()
 
     # The Discriminator
-    discriminator = make_discriminator_model()
-    decision = discriminator(generated_image)
-    print (decision)
+    self.discriminator = self.make_discriminator_model()
+    decision = self.discriminator(generated_image)
+    print(decision)
 
     # Define the loss and optimizers
-    cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True) # This method returns a helper function to compute cross entropy loss
+    self.cross_entropy = tf.keras.losses.BinaryCrossentropy(from_logits=True) # This method returns a helper function to compute cross entropy loss
 
     # Optimizer
-    generator_optimizer = tf.keras.optimizers.Adam(1e-4)
-    discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
+    self.generator_optimizer = tf.keras.optimizers.Adam(1e-4)
+    self.discriminator_optimizer = tf.keras.optimizers.Adam(1e-4)
 
     # Save checkpoints
     checkpoint_dir = './training_checkpoints'
-    checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
-    checkpoint = tf.train.Checkpoint(
-        generator_optimizer=generator_optimizer,
-        discriminator_optimizer=discriminator_optimizer,
-        generator=generator,
-    discriminator=discriminator)
+    self.checkpoint_prefix = os.path.join(checkpoint_dir, "ckpt")
+    self.checkpoint = tf.train.Checkpoint(
+        generator_optimizer=self.generator_optimizer,
+        discriminator_optimizer=self.discriminator_optimizer,
+        generator=self.generator,
+    discriminator=self.discriminator)
 
     # Define the training loop
-    EPOCHS = 500
-    noise_dim = 100
+    self.EPOCHS = 5 # 500
+    self.noise_dim = 100
     num_examples_to_generate = 16
-    seed = tf.random.normal([num_examples_to_generate, noise_dim]) # We will reuse this seed overtime (so it's easier) to visualize progress in the animated GIF)
+    self.seed = tf.random.normal([num_examples_to_generate, self.noise_dim]) # We will reuse this seed overtime (so it's easier) to visualize progress in the animated GIF)
 
     # Main call
-    train(train_dataset, EPOCHS)
+    self.train(train_dataset, self.EPOCHS)
 
     # Restore the latest checkpoint.
-    checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
+    self.checkpoint.restore(tf.train.latest_checkpoint(checkpoint_dir))
 
     # Display image
-    display_image(EPOCHS)
+    self.display_image(self.EPOCHS)
 
     # Create a GIF
-    create_gif()
+    self.create_gif()
 
   # The Generator
-  def make_generator_model():
+  def make_generator_model(self):
     model = tf.keras.Sequential()
     model.add(layers.Dense(7*7*256, use_bias=False, input_shape=(100,)))
     model.add(layers.BatchNormalization())
@@ -114,11 +114,9 @@ class GANtf2Color():
 
     return model
 
-
-  def make_discriminator_model():
+  def make_discriminator_model(self):
       model = tf.keras.Sequential()
-      model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same',
-                                      input_shape=[28, 28, 1]))
+      model.add(layers.Conv2D(64, (5, 5), strides=(2, 2), padding='same', input_shape=self.img_shape)) # test self.img_shape
       model.add(layers.LeakyReLU())
       model.add(layers.Dropout(0.3))
 
@@ -131,17 +129,16 @@ class GANtf2Color():
 
       return model
 
-
-  def discriminator_loss(real_output, fake_output):
-    real_loss = cross_entropy(tf.ones_like(real_output), real_output)
-    fake_loss = cross_entropy(tf.zeros_like(fake_output), fake_output)
+  def discriminator_loss(self, real_output, fake_output):
+    real_loss = self.cross_entropy(tf.ones_like(real_output), real_output)
+    fake_loss = self.cross_entropy(tf.zeros_like(fake_output), fake_output)
     total_loss = real_loss + fake_loss
     return total_loss
 
-  def generator_loss(fake_output):
-    return cross_entropy(tf.ones_like(fake_output), fake_output)
+  def generator_loss(self, fake_output):
+    return self.cross_entropy(tf.ones_like(fake_output), fake_output)
 
-  def generate_and_save_images(model, epoch, test_input):
+  def generate_and_save_images(self, model, epoch, test_input):
     # Notice `training` is set to False.
     # This is so all layers run in inference mode (batchnorm).
     predictions = model(test_input, training=False)
@@ -156,54 +153,52 @@ class GANtf2Color():
     plt.savefig('output/image_at_epoch_{:04d}.png'.format(epoch))
   #   plt.show()
 
-
-
   @tf.function
-  def train_step(images):
-    noise = tf.random.normal([BATCH_SIZE, noise_dim])
+  def train_step(self, images):
+    noise = tf.random.normal([self.BATCH_SIZE, self.noise_dim])
 
     with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-      generated_images = generator(noise, training=True)
+      generated_images = self.generator(noise, training=True)
 
-      real_output = discriminator(images, training=True)
-      fake_output = discriminator(generated_images, training=True)
+      real_output = self.discriminator(images, training=True)
+      fake_output = self.discriminator(generated_images, training=True)
 
-      gen_loss = generator_loss(fake_output)
-      disc_loss = discriminator_loss(real_output, fake_output)
+      gen_loss = self.generator_loss(fake_output)
+      disc_loss = self.discriminator_loss(real_output, fake_output)
 
-    gradients_of_generator = gen_tape.gradient(gen_loss, generator.trainable_variables)
-    gradients_of_discriminator = disc_tape.gradient(disc_loss, discriminator.trainable_variables)
+    gradients_of_generator = gen_tape.gradient(gen_loss, self.generator.trainable_variables)
+    gradients_of_discriminator = disc_tape.gradient(disc_loss, self.discriminator.trainable_variables)
 
-    generator_optimizer.apply_gradients(zip(gradients_of_generator, generator.trainable_variables))
-    discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, discriminator.trainable_variables))
+    self.generator_optimizer.apply_gradients(zip(gradients_of_generator, self.generator.trainable_variables))
+    self.discriminator_optimizer.apply_gradients(zip(gradients_of_discriminator, self.discriminator.trainable_variables))
 
-  def train(dataset, epochs):
+  def train(self, dataset, epochs):
     for epoch in range(epochs):
       start = time.time()
 
       for image_batch in dataset:
-        train_step(image_batch)
+        self.train_step(image_batch)
 
       # Produce images for the GIF as we go
       display.clear_output(wait=True)
-      generate_and_save_images(generator, epoch + 1, seed)
+      self.generate_and_save_images(self.generator, epoch + 1, self.seed)
 
       # Save the model every 15 epochs
       if (epoch + 1) % 15 == 0:
-        checkpoint.save(file_prefix = checkpoint_prefix)
+        self.checkpoint.save(file_prefix = self.checkpoint_prefix)
 
       print ('Time for epoch {} is {} sec'.format(epoch + 1, time.time()-start))
 
     # Generate after the final epoch
     display.clear_output(wait=True)
-    generate_and_save_images(generator, epochs, seed)
+    self.generate_and_save_images(self.generator, epochs, self.seed)
 
   # Display a single image using the epoch number
-  def display_image(epoch_no):
+  def display_image(self, epoch_no):
     return PIL.Image.open('output/image_at_epoch_{:04d}.png'.format(epoch_no))
 
   # Create the gif
-  def create_gif():
+  def create_gif(self):
     anim_file = 'output/dcgan.gif' # Use imageio to create an animated gif using the images saved during training.
     with imageio.get_writer(anim_file, mode='I') as writer:
       filenames = glob.glob('image*.png')
@@ -219,6 +214,4 @@ class GANtf2Color():
         writer.append_data(image)
     if IPython.version_info > (6,2,0,''):
       display.Image(filename=anim_file)
-
-
 

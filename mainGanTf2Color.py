@@ -6,9 +6,10 @@ mainDir = os.path.dirname(os.path.realpath(__file__))
 inputPath = mainDir + '\\input\\'
 resizedFolder = mainDir + '\\resized\\'
 outputFolder = mainDir + '\\output\\'
-imageHeight = 1080
-imageWidth = 773
-redimRatio = 4 # 4 min. Reduce image size : height / ratio. Dont get too low since it 'll take a huge amount of memory
+imageHeight = 28 # 1080
+imageWidth = 28 # 773
+channels = 1
+redimRatio = 1 # 4 min. Reduce image size : height / ratio. Dont get too low since it 'll take a huge amount of memory
 
 # Parameters that can be optimized
 percentageOfImagesToKeep = 1 # 10
@@ -25,11 +26,11 @@ percentageOfImagesToKeep = 1 # 10
 
 from GANtf2Color import GANtf2Color
 
-
 gan = GANtf2Color(
     x,
-    img_rows = new_image_height,
-    img_cols = new_image_width,
+    imgRows = new_image_height,
+    imgCols = new_image_width,
+    channels = channels,
     outputFolder = outputFolder,
     redimRatio = redimRatio,
     percentageOfImagesToKeep = percentageOfImagesToKeep,
@@ -37,4 +38,3 @@ gan = GANtf2Color(
 
 gan.run(
 )
-

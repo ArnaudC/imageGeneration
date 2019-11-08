@@ -6,7 +6,7 @@ from cv2 import cv2 # Need to install an older version on windows : 'pip install
 
 # Expected output (self.img_rows, self.img_cols, self.channels)
 # channels = 3 colors : R, G, B.
-def loadFolderToTensorFlow(folder, image_width, image_height, ratio, resizedFolder, outputFolder, channels = 3, percentageOfImagesToKeep = 100, minFiles = 5):
+def loadFolderToTensorFlow(folder, image_width, image_height, ratio, resizedFolder, outputFolder, channels = 3, percentageOfImagesToKeep = 100, minFiles = 5, multipleOf = -1):
 
     # Load all files
     onlyfiles = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
@@ -41,6 +41,11 @@ def loadFolderToTensorFlow(folder, image_width, image_height, ratio, resizedFold
     new_image_width = int(image_width / ratio)
     # channels = 3
     # nb_classes = 1
+
+    # Images height and width must be a multiple of "multipleOf". Take a smaller image if not.
+    if (multipleOf >= 1):
+        new_image_height = new_image_height - new_image_height % multipleOf
+        new_image_width = new_image_width - new_image_width % multipleOf
 
     # Create dataset
     dataset = np.ndarray(shape=(nFiles, new_image_height, new_image_width, channels), dtype=np.float32)

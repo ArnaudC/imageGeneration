@@ -1,5 +1,6 @@
 # https://skymind.ai/wiki/generative-adversarial-network-gan
 # TODO : early stopping
+# TODO : Denoising with Conv2
 
 import os, sys
 from loadFolderToTensorFlow import loadFolderToTensorFlow

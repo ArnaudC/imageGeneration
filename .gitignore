@@ -1,7 +1,9 @@
 input/*
 output/*
+screen/*
 resized/*
 inputOthers/*
-screen/*
+checkpoints/*
 !screen/readme/
 __pycache__/*
+bash.exe.stackdump

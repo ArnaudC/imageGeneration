@@ -1,3 +1,4 @@
+# https://github.com/t0nberryking/DCGAN256
 import os
 import numpy as np
 import random
@@ -5,15 +6,23 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from math import floor
 from cv2 import cv2 # Need to install an older version on windows : 'pip install opencv-python=3.3.0.9'
+from loadFolderToTensorFlow import removeAllFilesInFolder
+
+# Static params to change once
+mainDir = os.getcwd()
+input = mainDir + '\\input\\'
+output = mainDir + '\\output\\'
+resized = mainDir + '\\resized\\'
+models = mainDir + '\\models\\'
+removeAllFilesInFolder(output)
+removeAllFilesInFolder(resized)
+removeAllFilesInFolder(models)
 
 # Parameters to change
 percentageOfImgToLoad = 100 # 100
 isShuffle = False # False
-mainDir = os.getcwd()
-input = mainDir + '\\input\\'
-output = mainDir + '\\output\\'
-models = mainDir + '\\models\\'
-
+stepsToWriteImg = 1000 # 1000
+new_image_width, new_image_height = 256, 256
 
 def zero():
     return np.random.uniform(0.0, 0.01, size = [1])
@@ -29,13 +38,16 @@ Images = []
 files = os.listdir(input)
 if (isShuffle):
     random.shuffle(files)
-imgToLoad = int(len(files) * percentageOfImgToLoad/100)
-new_image_width, new_image_height = 256, 256
+imgToLoad = int(len(files) * percentageOfImgToLoad / 100)
+
 for n in range(1, imgToLoad):
-    temp1 = Image.open(input + files[0])
-
+    if (n % 200 == 0):
+        print(str(n) + " / " + str(imgToLoad) + " loaded ...")
+    temp1 = Image.open(input + files[n])
     temp1 = temp1.resize(size=(new_image_width, new_image_height), resample=0) # resample=0
-
+    if (n <= 5):
+        temp1.save(resized + "resized " + str(n) + ".png") # Save first pictures
+    
     temp = np.array(temp1.convert('RGB'), dtype='float32')
     
     Images.append(temp / 255)
@@ -322,7 +334,7 @@ class Model_GAN(object):
         gen_file.close()
         
         self.GAN.G = model_from_json(gen_json)
-        self.GAN.G.load_weights(models + "gen"+str(num)+".h5")
+        self.GAN.G.load_weights(models + "gen" + str(num) + ".h5")
 
         #Discriminator
         dis_file = open(models + "dis.json", 'r')
@@ -356,25 +368,9 @@ class Model_GAN(object):
         
         x.save(output + "i" + str(num) + ".png")
 
-
-# https://stackoverflow.com/questions/185936/how-to-delete-the-contents-of-a-folder-in-python
-def removeAllFilesInFolder(folder):
-    for the_file in os.listdir(folder):
-        file_path = os.path.join(folder, the_file)
-        try:
-            if os.path.isfile(file_path):
-                os.unlink(file_path)
-            #elif os.path.isdir(file_path): shutil.rmtree(file_path)
-        except Exception as e:
-            print(e)
-
-removeAllFilesInFolder(output)
-removeAllFilesInFolder(models)
-stepsToWriteImg = 1000
-
 #if training new model:
 model = Model_GAN() 
-# model.load(1)
+# model.load(8)
 model.GAN.D.summary()
 model.GAN.G.summary()
 
@@ -383,5 +379,5 @@ print("We're off! See you in a while!")
 while(model.GAN.steps < 500000):
     model.train()
     if model.GAN.steps % stepsToWriteImg == 0:
-        print("\n\n\n\nRound " + str(model.GAN.steps) + ":")
+        print("\nRound " + str(model.GAN.steps) + ":")
         model.eval2(int(model.GAN.steps / stepsToWriteImg))

@@ -4,6 +4,7 @@ screen/*
 resized/*
 inputOthers/*
 checkpoints/*
+models/*
 !screen/readme/
 __pycache__/*
 bash.exe.stackdump

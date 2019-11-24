@@ -16,7 +16,8 @@ resized = mainDir + '\\resized\\'
 models = mainDir + '\\models\\'
 removeAllFilesInFolder(output)
 removeAllFilesInFolder(resized)
-removeAllFilesInFolder(models)
+# removeAllFilesInFolder(models) # only if you want to clean models
+stepToLoad = 7 # 0 for a fresh start
 
 # Parameters to change
 percentageOfImgToLoad = 100 # 100
@@ -369,8 +370,9 @@ class Model_GAN(object):
         x.save(output + "i" + str(num) + ".png")
 
 #if training new model:
-model = Model_GAN() 
-# model.load(8)
+model = Model_GAN()
+if (stepToLoad != 0):
+    model.load(stepToLoad)
 model.GAN.D.summary()
 model.GAN.G.summary()
 

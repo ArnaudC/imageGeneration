@@ -52,7 +52,7 @@ class GANtf2Color():
     train_dataset = tf.data.Dataset.from_tensor_slices(train_images).shuffle(self.imgNb).batch(self.batchSize)
 
     # The Generator
-    self.generator = self.make_generator_model()
+    self.generator = self.make_generator_model_2()
     noise = np.random.normal(0, 1, (1, self.latentDim)) # r * c to plot many
     generatedImage = self.generator(noise, training=False)
     genOutput = generatedImage[0, :, :, :]
@@ -63,7 +63,7 @@ class GANtf2Color():
     plt.close()
 
     # The Discriminator
-    self.discriminator = self.make_discriminator_model()
+    self.discriminator = self.make_discriminator_model_2()
     decision = self.discriminator(generatedImage)
     print(decision)
 
@@ -134,23 +134,61 @@ class GANtf2Color():
     imgColsConvNb = int(self.imgCols / self.convolutionNb)
 
     model = tf.keras.Sequential()
-    model.add(Dense(imgRowsConvNb * imgColsConvNb * (self.colors * self.channels), use_bias=False, input_shape=(self.latentDim,)))
+    model.add(Dense(imgRowsConvNb * imgColsConvNb * 256, use_bias=False, input_shape=(self.latentDim,)))
     model.add(BatchNormalization())
     model.add(LeakyReLU())
 
-    model.add(Reshape((imgRowsConvNb, imgColsConvNb, self.colors * self.channels)))
-    assert model.output_shape == (None, imgRowsConvNb, imgColsConvNb, self.colors * self.channels) # Note: None is the batch size
+    model.add(Reshape((imgRowsConvNb, imgColsConvNb, 256)))
+    assert model.output_shape == (None, imgRowsConvNb, imgColsConvNb, 256) # Note: None is the batch size
 
-    for i in range(1, self.convolutionNb - 2):
-      colorsI = self.colors / (i + 1)
-      stridesI = (1, 1) if (i == 1) else (2, 2)
+    for i in range(1, self.convolutionNb - 2 + 1):
+      colorsI = int(self.colors / (i + 1))
+      stridesI = (2, 2) if (i % 2 == 0) else (1, 1)
       imgRowsI = imgRowsConvNb * i
       imgColsI = imgColsConvNb * i
-
-      model.add(Conv2DTranspose(colorsI * self.channels, (5, 5), strides=stridesI, padding='same', use_bias=False))
-      assert model.output_shape == (None, imgRowsI, imgColsI, colorsI * self.channels)
+      model.add(Conv2DTranspose(256, (5, 5), strides=stridesI, padding='same', use_bias=False))
+      # colorsI * self.channels
+      # assert model.output_shape == (None, imgRowsI, imgColsI, 256) # colorsI * self.channels
       model.add(BatchNormalization())
       model.add(LeakyReLU())
+
+    model.add(Conv2DTranspose(128, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
+    assert model.output_shape == (None, self.imgRows, self.imgCols, 256)
+
+    model.summary()
+    return model
+
+  def make_generator_model_2(self):
+    imgRows4 = int(self.imgRows / 4)
+    imgCols4 = int(self.imgCols / 4)
+    imgRows2 = 2 * imgRows4
+    imgCols2 = 2 * imgCols4
+
+    model = tf.keras.Sequential()
+    model.add(Dense(imgRows4 * imgCols4 * 256, use_bias=False, input_shape=(self.latentDim,)))
+    model.add(BatchNormalization())
+    model.add(LeakyReLU())
+
+    model.add(Reshape((imgRows4, imgCols4, 256 * self.channels)))
+    assert model.output_shape == (None, imgRows4, imgCols4, 256 * self.channels) # Note: None is the batch size
+
+    model.add(Conv2DTranspose(256, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+    assert model.output_shape == (None, imgRows2, imgCols2, 256)
+    model.add(BatchNormalization())
+    model.add(LeakyReLU())
+
+
+    model.add(Conv2DTranspose(256, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+    assert model.output_shape == (None, imgRows2, imgCols2, 256)
+    model.add(BatchNormalization())
+    model.add(LeakyReLU())
+
+
+
+    model.add(Conv2DTranspose(64 * self.channels, (5, 5), strides=(2, 2), padding='same', use_bias=False))
+    assert model.output_shape == (None, imgRows2, imgCols2, 64 * self.channels)
+    model.add(BatchNormalization())
+    model.add(LeakyReLU())
 
     model.add(Conv2DTranspose(1 * self.channels, (5, 5), strides=(2, 2), padding='same', use_bias=False, activation='tanh'))
     assert model.output_shape == (None, self.imgRows, self.imgCols, 1 * self.channels)
@@ -171,17 +209,20 @@ class GANtf2Color():
       model.add(Flatten())
       model.add(Dense(1))
 
+      # model.add(layers.Activation('sigmoid')) # to test
+
       model.summary()
       return model
 
   def make_discriminator_model_conv_nb(self):
       model = tf.keras.Sequential()
-      model.add(Conv2D(64 * self.channels, (5, 5), strides=(2, 2), padding='same', input_shape=self.imgShape)) # self.generator.output_shape[1:]
+      colorsN = int(self.colors / self.convolutionNb)
+      model.add(Conv2D(colorsN * self.channels, (5, 5), strides=(2, 2), padding='same', input_shape=self.imgShape)) # self.generator.output_shape[1:]
       model.add(LeakyReLU())
       model.add(Dropout(0.3))
 
-      for i in range(1, self.convolutionNb - 3):
-        colorsI = self.colors / (i+1)
+      for i in range(1, self.convolutionNb - 3 + 1):
+        colorsI = int(self.colors / (i+1))
         model.add(Conv2D(colorsI * self.channels, (5, 5), strides=(2, 2), padding='same'))
         model.add(LeakyReLU())
         model.add(Dropout(0.3))

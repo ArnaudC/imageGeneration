@@ -21,7 +21,7 @@ percentageOfImagesToKeep = 1 # 10
 batchSize = 1 # 4, 32
 epochs = 401 # 401
 latentDim = 100 # 100
-convolutionNb = 4 # in [2, 8], used for the generator 
+convolutionNb = 8 # in [2, 8], used for the generator 
 
 (x, new_image_height, new_image_width) = loadFolderToTensorFlow(
     folder = inputPath,

@@ -8,6 +8,7 @@ from tensorflow.keras.layers import Reshape, Conv2DTranspose
 from tensorflow.keras.models import Model
 from tensorflow.keras import backend as K
 from tensorflow.keras.datasets import mnist
+# from tensorflow import unstack, stack
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -30,12 +31,14 @@ redimRatio = 4 # 4 min. Reduce image size : height / ratio. Dont get too low sin
 # dpi = 400 # 400
 
 # Parameters that can be optimized
-percentageOfImagesToKeep = 10 # 10
+percentageOfImagesToKeep = 2 # 10
 batch_size = 1 # 4, 32
 kernel_size = 3
 latent_dim = 16
-epochs = 30 # 30
+epochs = 3 # 30
 channels = 3
+rows, cols = 1, 4
+testSizePercentage = 0.1428
 
 (x, new_image_height, new_image_width) = loadFolderToTensorFlow(
         folder = inputPath,
@@ -48,7 +51,7 @@ channels = 3
         multipleOf=4
 )
 
-x_train, x_test, y_train, y_test = train_test_split(x, x, test_size=0.1428)
+x_train, x_test, y_train, y_test = train_test_split(x, x, test_size=testSizePercentage)
 
 # MNIST dataset
 # (x_train, _), (x_test, _) = mnist.load_data()
@@ -147,13 +150,13 @@ autoencoder.fit(x_train_noisy,
 x_decoded = autoencoder.predict(x_test_noisy)
 
 # Display the 1st 8 corrupted and denoised images
-rows, cols = 1, 1
-num = rows * cols
-imgs = np.concatenate([x_test[:num], x_test_noisy[:num], x_decoded[:num]])
-imgs = imgs.reshape((rows * 3, cols, new_image_height, new_image_width, channels))
-imgs = np.vstack(np.split(imgs, rows, axis=1))
-imgs = imgs.reshape((rows * 3, -1, new_image_height, new_image_width, channels))
-imgs = np.vstack([np.hstack(i) for i in imgs])
+imgs = np.concatenate([x_test[0], x_test_noisy[0], x_decoded[0]]) # view first
+# num = rows * cols
+# imgs = np.concatenate([x_test[:num], x_test_noisy[:num], x_decoded[:num]])
+# imgs = imgs.reshape((rows * 3, cols, new_image_height, new_image_width, channels))
+# imgs = np.vstack(np.split(imgs, rows, axis=1))
+# imgs = imgs.reshape((rows * 3, -1, new_image_height, new_image_width, channels))
+# imgs = np.vstack([np.hstack(i) for i in imgs])
 imgs = (imgs * 255).astype(np.uint8)
 plt.figure()
 plt.axis('off')
